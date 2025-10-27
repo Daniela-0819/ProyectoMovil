@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "492576382583",
+    "project_id": "clon-b2ff0",
+    "storage_bucket": "clon-b2ff0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492576382583:android:25a7ac0d3cf8fd4c773072",
+        "android_client_info": {
+          "package_name": "com.tdea.clon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtRsxgKbBgzDCPiBNcRqx625nJseobYUg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
