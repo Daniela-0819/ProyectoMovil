@@ -79,7 +79,7 @@ android {
 
     namespace "com.vibes"
     defaultConfig {
-        applicationId "com.vibes"
+        applicationId "com.tdea.clon"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -116,4 +116,6 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    implementation platform('com.google.firebase:firebase-bom:34.4.0')
 }
+apply plugin: 'com.google.gms.google-services'
