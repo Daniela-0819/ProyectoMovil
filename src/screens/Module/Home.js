@@ -24,7 +24,7 @@ const Home = ({ navigation, route }) => {
           <Button
             mode="contained"
             style={styles.button}
-            onPress={() => navigation.navigate('PostTwett', { user })}
+            onPress={() => navigation.navigate('PostTweet', { user })}
           >
             New Tweet
           </Button>
@@ -39,7 +39,7 @@ const Home = ({ navigation, route }) => {
             Following List
           </Button>
 
-          <Button mode="text" onPress={() => navigation.navigate('Login')}>
+          <Button mode="text" onPress={() => navigation.navigate('LogIn')}>
             Log Out
           </Button>
         </Card.Content>
