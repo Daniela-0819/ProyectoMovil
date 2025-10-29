@@ -4,7 +4,7 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBh_mQME9iZCIvOpHzAtzhGKctbagh6b3w",
+  apiKey: "AIzaSyDtRsxgKbBgzDCPiBNcRqx625nJseobYUg",
   authDomain: "clon-b2ff0.firebaseapp.com",
   projectId: "clon-b2ff0",
   storageBucket: "clon-b2ff0.firebasestorage.app",
@@ -16,6 +16,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-export const storage = getStorage(app)
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Inicializar Firestore con persistencia local
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache(),
+});
+
+// Inicializar Auth y Storage
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+export { auth, db, storage };
