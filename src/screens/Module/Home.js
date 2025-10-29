@@ -1,8 +1,8 @@
-import React from "react";
-import { ScrollView, View } from "react-native";
-import { Card, Button, Divider } from "react-native-paper";
-import ProfileView from "../Views/ProfileView";
-import styles from "../../Styles/styles";
+import React from 'react';
+import { ScrollView, View } from 'react-native';
+import { Card, Button, Divider } from 'react-native-paper';
+import ProfileView from '../Views/ProfileView';
+import styles from '../../Styles/styles';
 
 const Home = ({ navigation, route }) => {
   const { user } = route.params;
@@ -16,7 +16,7 @@ const Home = ({ navigation, route }) => {
           <Button
             mode="contained"
             style={styles.button}
-            onPress={() => navigation.navigate("Feed", { user })}
+            onPress={() => navigation.navigate('Feed', { user })}
           >
             View Feed
           </Button>
@@ -24,28 +24,22 @@ const Home = ({ navigation, route }) => {
           <Button
             mode="contained"
             style={styles.button}
-            onPress={() => navigation.navigate("NewTweet", { user })}
+            onPress={() => navigation.navigate('PostTwett', { user })}
           >
             New Tweet
           </Button>
 
           <Divider style={styles.divider} />
 
-          <Button
-            mode="text"
-            onPress={() => navigation.navigate("Followers", { user })}
-          >
+          <Button mode="text" onPress={() => navigation.navigate('Followers', { user })}>
             Followers List
           </Button>
 
-          <Button
-            mode="text"
-            onPress={() => navigation.navigate("Following", { user })}
-          >
+          <Button mode="text" onPress={() => navigation.navigate('Following', { user })}>
             Following List
           </Button>
 
-          <Button mode="text" onPress={() => navigation.navigate("Login")}>
+          <Button mode="text" onPress={() => navigation.navigate('Login')}>
             Log Out
           </Button>
         </Card.Content>
