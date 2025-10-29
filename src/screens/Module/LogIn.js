@@ -26,7 +26,7 @@ const LogIn = ({ navigation }) => {
        // Reference to users document in Firestore
       if (docSnap.exists()) {
         const userData = docSnap.data();
-        navigation.navigate('Home', { user: userData });
+        navigation.navigate('Home', { user: { ...userData, uid: user.uid } });
       } else {
         Alert.alert('Error', 'User data not found.');
       }
