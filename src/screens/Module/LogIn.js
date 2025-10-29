@@ -1,35 +1,37 @@
-import React, { useState } from "react";
-import { View, ScrollView, Alert, Image } from "react-native";
-import { Card, TextInput, Button, Text } from "react-native-paper";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../config/firebase";
-import { doc, getDoc } from "firebase/firestore";
-import styles from "../../Styles/styles";
+import React, { useState } from 'react';
+import { View, ScrollView, Alert, Image } from 'react-native';
+import { Card, TextInput, Button, Text } from 'react-native-paper';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../../config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import styles from '../../Styles/styles';
 
-const Login= ({ navigation }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const LogIn = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please fill all fields");
+      Alert.alert('Error', 'Please fill all fields');
       return;
     }
 
     try {
+      // Sign in user with Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const docRef = doc(db, "users", user.uid);
+      const docRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(docRef);
 
+       // Reference to users document in Firestore
       if (docSnap.exists()) {
         const userData = docSnap.data();
-        navigation.navigate("Home", { user: userData });
+        navigation.navigate('Home', { user: userData });
       } else {
-        Alert.alert("Error", "User data not found.");
+        Alert.alert('Error', 'User data not found.');
       }
     } catch (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert('Error', error.message);
     }
   };
 
@@ -38,7 +40,7 @@ const Login= ({ navigation }) => {
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.headerContainer}>
           <Image
-            source={require("../../../images/vibes.png")}
+            source={require('../../../images/vibes.png')}
             style={{ width: 150, height: 150, marginBottom: 10 }}
           />
           <Text style={styles.title}>Welcome Back</Text>
@@ -67,7 +69,7 @@ const Login= ({ navigation }) => {
               Log In
             </Button>
 
-            <Button mode="text" onPress={() => navigation.navigate("Register")}>
+            <Button mode="text" onPress={() => navigation.navigate('Register')}>
               Create an account
             </Button>
           </Card.Content>
@@ -77,4 +79,4 @@ const Login= ({ navigation }) => {
   );
 };
 
-export default Login;
+export default LogIn;
