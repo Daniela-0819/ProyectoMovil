@@ -17,7 +17,7 @@ export default function App() {
           <Stack.Screen name="LogIn" component={LogIn} />
           <Stack.Screen name="Register" component={Register} />
           <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="PostTwett" component={PostTweet} />
+          <Stack.Screen name="PostTweet" component={PostTweet} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
