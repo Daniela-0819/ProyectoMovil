@@ -5,6 +5,7 @@ import { PaperProvider } from 'react-native-paper';
 import LogIn from './src/Screens/Module/LogIn';
 import Register from './src/Screens/Module/Register';
 import Home from './src/Screens/Module/Home';
+import PostTweet from './src/Screens/Module/PostTweet';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,7 @@ export default function App() {
           <Stack.Screen name="LogIn" component={LogIn} />
           <Stack.Screen name="Register" component={Register} />
           <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="PostTwett" component={PostTweet} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
