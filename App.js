@@ -6,6 +6,9 @@ import LogIn from './src/Screens/Module/LogIn';
 import Register from './src/Screens/Module/Register';
 import Home from './src/Screens/Module/Home';
 import PostTweet from './src/Screens/Module/PostTweet';
+import Feed from './src/Screens/Module/Feed';
+import Followers from './src/Screens/Module/Followers';
+import Following from './src/Screens/Module/Following';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +21,9 @@ export default function App() {
           <Stack.Screen name="Register" component={Register} />
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="PostTweet" component={PostTweet} />
+          <Stack.Screen name="Feed" component={Feed} />
+          <Stack.Screen name="Followers" component={Followers} />
+          <Stack.Screen name="Following" component={Following} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
