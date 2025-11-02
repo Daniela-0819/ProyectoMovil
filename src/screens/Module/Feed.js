@@ -1,78 +1,92 @@
-import React, { useEffect, useState } from "react";
-import { ScrollView, View, RefreshControl } from "react-native";
-import { Text, Button, ActivityIndicator } from "react-native-paper";
-import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
-import { db } from "../../config/firebase";
-import TweetCard from "../Views/TweetCard";
-import styles from "../../Styles/styles";
+import React, { useEffect, useState } from 'react';
+import { db } from '../../config/firebase';
+import {
+  collection,
+  query,
+  orderBy,
+  where,
+  getDocs,
+  doc,
+  onSnapshot,
+  getDoc,
+} from 'firebase/firestore';
+import FeedView from '../Views/FeedView';
 
 const Feed = ({ route }) => {
-  const { user } = route.params;
-  const [tweets, setTweets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  // Get userId from route params
+  const { userId } = route.params;
 
-  const fetchTweets = async () => {
-    try {
-      setLoading(true);
-      const q = query(collection(db, "tweets"), orderBy("createdAt", "desc"), limit(10));
-      const snapshot = await getDocs(q);
-      const tweetList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setTweets(tweetList);
-    } catch (error) {
-      console.error("Error loading tweets:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // State for user data and user's tweets
+  const [user, setUser] = useState(null);
+  const [tweets, setTweets] = useState([]);
 
   useEffect(() => {
+    // Real-time subscription for user data
+    const unsubscribeUser = onSnapshot(doc(db, 'users', userId), async userDoc => {
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+
+        // References to followers and following collections
+        const followersRef = collection(db, 'followers', userId, 'followers');
+        const followingRef = collection(db, 'followers', userId, 'following');
+
+        // Real-time listener for followers count
+        const unsubscribeFollowers = onSnapshot(followersRef, snapshot => {
+          setUser(prev => ({
+            ...userData,
+            uid: userId,
+            followers: snapshot.size,
+            following: prev?.following || 0,
+          }));
+        });
+
+        // Real-time listener for following count
+        const unsubscribeFollowing = onSnapshot(followingRef, snapshot => {
+          setUser(prev => ({
+            ...userData,
+            uid: userId,
+            followers: prev?.followers || 0,
+            following: snapshot.size,
+          }));
+        });
+
+        // Cleanup listeners
+        return () => {
+          unsubscribeFollowers();
+          unsubscribeFollowing();
+        };
+      }
+    });
+
+    const fetchTweets = async () => {
+      try {
+        const tweetRef = collection(db, 'tweets');
+        const tweetQuery = query(
+          tweetRef,
+          where('userId', '==', userId),
+          orderBy('createdAt', 'desc'),
+        );
+        const tweetSnap = await getDocs(tweetQuery);
+        const tweetList = tweetSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTweets(tweetList);
+      } catch (error) {
+        console.log('Error fetching tweets:', error);
+      }
+    };
+
     fetchTweets();
-  }, []);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchTweets();
-    setRefreshing(false);
-  };
+    // Cleanup user subscription on unmount
+    return () => unsubscribeUser();
+  }, [userId]);
 
-  if (loading)
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#9C27B0" />
-        <Text style={{ marginTop: 10, color: "#6C2DC7" }}>Loading feed...</Text>
-      </View>
-    );
+  // Render nothing if user data is not loaded
+  if (!user) return null;
 
-  return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <View style={{ alignItems: "center"}}>
-        <Text style={styles.feedTitle}>Latest Tweets</Text>
-      </View>
-
-      {tweets.length === 0 ? (
-        <Text style={styles.emptyText}>No tweets yet 😅 </Text>
-      ) : (
-        tweets.map((tweet) => <TweetCard key={tweet.id} tweet={tweet} />)
-      )}
-
-      <Button
-        icon="refresh"
-        mode="contained-tonal"
-        onPress={fetchTweets}
-        style={styles.refreshButton}
-        labelStyle={styles.refreshButtonLabel}
-      >
-        Refresh
-      </Button>
-    </ScrollView>
-  );
+  return <FeedView user={user} tweets={tweets} />;
 };
 
 export default Feed;
