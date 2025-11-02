@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     color: "gray",
   },
 
-  /* ------------------- FOLLOWERS / FOLLOWING ------------------- */
+  // FOLLOWERS / FOLLOWING 
   followersContainer: {
     flex: 1,
     backgroundColor: "#faf7ff",
@@ -179,6 +179,38 @@ const styles = StyleSheet.create({
     color: "#6C2DC7",
     fontWeight: "600",
   },
+
+  //CONTADORES DE SEGUIDORES 
+  countersContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 15,
+  },
+  counterBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 10,
+  },
+  counterNumber: {
+    fontWeight: "bold",
+    color: "#6C2DC7",
+    fontSize: 16,
+    marginRight: 4,
+  },
+  counterLabel: {
+    color: "gray",
+    fontSize: 14,
+  },
+
+  userRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  borderBottomWidth: 0.3,
+  borderColor: "#ccc",
+},
+
+
 });
 
 export default styles;
