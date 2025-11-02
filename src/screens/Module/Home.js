@@ -1,50 +1,80 @@
-import React from 'react';
-import { ScrollView, View } from 'react-native';
-import { Card, Button, Divider } from 'react-native-paper';
-import ProfileView from '../Views/ProfileView';
-import styles from '../../Styles/styles';
+import React, { useState } from "react";
+import { View, ScrollView } from "react-native";
+import { Appbar, Button } from "react-native-paper";
+import { auth } from "../../config/firebase";
+import ForYou from "./ForYou";
+import FollowingTweets from "./FollowingTweets";
+import styles from "../../Styles/styles";
 
-const Home = ({ navigation, route }) => {
-  const { user } = route.params;
+const Home = ({ navigation }) => {
+  const [tab, setTab] = useState("foryou");
 
   return (
-    <ScrollView style={styles.container}>
-      <ProfileView user={user} />
+    <View style={styles.container}>
+      <Appbar.Header style={{ backgroundColor: "#faf7ff" }}>
+        <Appbar.Content
+          title="VIBES"
+          titleStyle={{ color: "#9C27B0", fontWeight: "bold", fontSize: 22 }}
+        />
+        <Appbar.Action
+          icon="account-circle"
+          color="#9C27B0"
+          onPress={() =>
+            navigation.navigate("Feed", { userId: auth.currentUser.uid })
+          }
+        />
+      </Appbar.Header>
 
-      <Card style={styles.card}>
-        <Card.Content>
+      {/* Scrollable container */}
+      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+        {/* Tabs */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginVertical: 10,
+          }}
+        >
           <Button
-            mode="contained"
-            style={styles.button}
-            onPress={() => navigation.navigate('Feed', { user })}
+            mode={tab === "foryou" ? "contained" : "outlined"}
+            textColor={tab === "foryou" ? "#fff" : "#9C27B0"}
+            buttonColor={tab === "foryou" ? "#9C27B0" : "transparent"}
+            onPress={() => setTab("foryou")}
+            style={{
+              marginRight: 10,
+              borderColor: "#9C27B0",
+              borderRadius: 10,
+            }}
+            labelStyle={{
+              fontWeight: "bold",
+              fontSize: 14,
+            }}
           >
-            View Feed
+            For You
           </Button>
 
           <Button
-            mode="contained"
-            style={styles.button}
-            onPress={() => navigation.navigate('PostTweet', { user })}
+            mode={tab === "following" ? "contained" : "outlined"}
+            textColor={tab === "following" ? "#fff" : "#9C27B0"}
+            buttonColor={tab === "following" ? "#9C27B0" : "transparent"}
+            onPress={() => setTab("following")}
+            style={{
+              borderColor: "#9C27B0",
+              borderRadius: 10,
+            }}
+            labelStyle={{
+              fontWeight: "bold",
+              fontSize: 14,
+            }}
           >
-            New Tweet
+            Following
           </Button>
+        </View>
 
-          <Divider style={styles.divider} />
-
-          <Button mode="text" onPress={() => navigation.navigate('Followers', { user })}>
-            Followers List
-          </Button>
-
-          <Button mode="text" onPress={() => navigation.navigate('Following', { user })}>
-            Following List
-          </Button>
-
-          <Button mode="text" onPress={() => navigation.navigate('LogIn')}>
-            Log Out
-          </Button>
-        </Card.Content>
-      </Card>
-    </ScrollView>
+        {/* Dynamic content */}
+        {tab === "foryou" ? <ForYou /> : <FollowingTweets />}
+      </ScrollView>
+    </View>
   );
 };
 
