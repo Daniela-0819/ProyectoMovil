@@ -9,6 +9,10 @@ import PostTweet from './src/Screens/Module/PostTweet';
 import Feed from './src/Screens/Module/Feed';
 import Followers from './src/Screens/Module/Followers';
 import Following from './src/Screens/Module/Following';
+import FollowingTweets from './src/Screens/Module/FollowingTweets';
+import ForYou from './src/Screens/Module/ForYou';
+import FeedView from './src/Screens/Views/FeedView';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +28,8 @@ export default function App() {
           <Stack.Screen name="Feed" component={Feed} />
           <Stack.Screen name="Followers" component={Followers} />
           <Stack.Screen name="Following" component={Following} />
+          <Stack.Screen name="FollowingTweets" component={FollowingTweets} />
+          <Stack.Screen name="ForYou" component={ForYou} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
