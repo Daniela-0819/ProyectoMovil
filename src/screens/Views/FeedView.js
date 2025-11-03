@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, RefreshControl, Alert } from 'react-native';
-import { Text, Avatar, Divider, Button, ActivityIndicator } from 'react-native-paper';
+import { Text, Avatar, Divider, Button, ActivityIndicator, IconButton, FAB } from 'react-native-paper';
 import styles from '../../Styles/styles';
 import TweetCard from './TweetCard';
 import { useNavigation } from '@react-navigation/native';
@@ -77,38 +77,23 @@ const FeedView = ({ user, tweets }) => {
 
   return (
     <View style={styles.container}>
-      {/* Profile header */}
-      <View style={styles.profileHeader}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Profile header */}
         <View>
+          <Avatar.Image
+            size={80}
+            source={user.photo ? { uri: user.photo } : require('../../../images/icono.jpg')}
+          />
           <Text style={styles.profileName}>{user.fullName}</Text>
           <Text style={styles.profileUsername}>@{user.username}</Text>
 
-          {/* Followers and Following counters */}
-          <View style={styles.followContainer}>
-            <Button
-              mode="text"
-              labelStyle={{ color: '#9C27B0', fontWeight: 'bold' }}
-              onPress={() => navigation.navigate('Followers', { user })}
-            >
-              {user.followers} Followers
-            </Button>
-
-            <Button
-              mode="text"
-              labelStyle={{ color: '#9C27B0', fontWeight: 'bold' }}
-              onPress={() => navigation.navigate('Following', { user })}
-            >
-              {user.following} Following
-            </Button>
-          </View>
-
-          {/* Follow / Following button */}
+          {/* Follow/Unfollow button */}
           {currentUser.uid !== user.uid && (
             <Button
               mode="contained"
               buttonColor={isFollowing ? '#C0C0C0' : '#9C27B0'}
               textColor={isFollowing ? '#000' : '#fff'}
-              style={{ marginTop: 10, width: 150 }}
+              style={styles.followButtonProfile}
               onPress={handleFollowToggle}
             >
               {isFollowing ? 'Following' : 'Follow'}
@@ -116,16 +101,30 @@ const FeedView = ({ user, tweets }) => {
           )}
         </View>
 
-        <Avatar.Image
-          size={80}
-          source={user.photo ? { uri: user.photo } : require('../../../images/icono.jpg')}
-        />
+        {/* Followers and Following counters */}
+        <View style={styles.followColumn}>
+          <Button
+            mode="text"
+            labelStyle={{ color: '#9C27B0', fontWeight: 'bold' }}
+            onPress={() => navigation.navigate('Followers', { user })}
+          >
+            {user.followers} Followers
+          </Button>
+
+          <Button
+            mode="text"
+            labelStyle={{ color: '#9C27B0', fontWeight: 'bold' }}
+            onPress={() => navigation.navigate('Following', { user })}
+          >
+            {user.following} Following
+          </Button>
+        </View>
       </View>
 
       <Divider style={{ marginVertical: 10 }} />
 
       {/* Tweets section */}
-      <Text style={styles.sectionTitle}>Tweets</Text>
+      <Text style={styles.sectionTitle}>Mis Tweets</Text>
 
       {refreshing && <ActivityIndicator color="#9C27B0" style={{ marginTop: 10 }} />}
 
@@ -139,6 +138,56 @@ const FeedView = ({ user, tweets }) => {
         }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
+
+      {/* FAB new tweet*/}
+      <FAB
+        style={styles.fab}
+        icon="plus"
+        onPress={() => {
+          if (!userData) return;
+          navigation.navigate('PostTweet', {
+            user: {
+              uid: auth.currentUser.uid,
+              username: userData.username || 'Unknown',
+              fullName: userData.fullName || 'No name',
+            },
+          });
+        }}
+      />
+
+      {/* bottom navegation */}
+      <View style={styles.bottomNav}>
+        <IconButton
+          icon="home"
+          iconColor="#9C27B0"
+          size={28}
+          onPress={() => navigation.navigate('Home')}
+        />
+
+        <IconButton
+          icon="magnify"
+          iconColor="#9C27B0"
+          size={28}
+          onPress={() => navigation.navigate('SearchUsers')}
+        />
+
+        <IconButton
+          icon="logout"
+          iconColor="#9C27B0"
+          size={28}
+          onPress={async () => {
+            try {
+              await auth.signOut();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'LogIn' }],
+              });
+            } catch (error) {
+              console.error('Error signing out:', error);
+            }
+          }}
+        />
+      </View>
     </View>
   );
 };
