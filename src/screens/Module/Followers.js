@@ -67,7 +67,7 @@ const Followers = ({ route }) => {
   return (
     <ScrollView style={styles.container}>
       {users.map(u => (
-        <View key={u.id} style={styles.userRow}>
+        <View key={u.id} style={styles.userCard}>
           <Avatar.Image
             size={55}
             source={u.photo ? { uri: u.photo } : require('../../../images/icono.jpg')}
@@ -79,6 +79,8 @@ const Followers = ({ route }) => {
           <Button
             mode={following.includes(u.id) ? 'outlined' : 'contained'}
             onPress={() => handleFollowToggle(u.id)}
+            style={styles.followButton}
+            labelStyle={styles.followButtonLabel}
           >
             {following.includes(u.id) ? 'Following' : 'Follow'}
           </Button>
