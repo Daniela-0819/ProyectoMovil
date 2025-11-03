@@ -1,91 +1,91 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Text, Avatar, Button, ActivityIndicator } from 'react-native-paper';
+import { ScrollView, View, RefreshControl } from 'react-native';
+import { Text, ActivityIndicator } from 'react-native-paper';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 import { db } from '../../config/firebase';
-import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import UserListItemView from '../Views/UserListItem';
 import styles from '../../Styles/styles';
 
 const Followers = ({ route }) => {
   const { user } = route.params;
-  const [users, setUsers] = useState([]);
-  const [following, setFollowing] = useState([]);
+  const navigation = useNavigation();
+  const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchAllUsers = async () => {
-      try {
-        const usersSnap = await getDocs(collection(db, 'users'));
-        const allUsers = usersSnap.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(u => u.id !== user.uid);
-        setUsers(allUsers);
-
-        const followingSnap = await getDocs(collection(db, 'followers', user.uid, 'following'));
-        const followingList = followingSnap.docs.map(doc => doc.id);
-        setFollowing(followingList);
-      } catch (error) {
-        console.log('Error loading users:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllUsers();
-  }, [user.uid]);
-
-  const handleFollowToggle = async targetUserId => {
+  const fetchFollowers = async () => {
     try {
-      const followingRef = doc(db, 'followers', user.uid, 'following', targetUserId);
-      const followerRef = doc(db, 'followers', targetUserId, 'followers', user.uid);
+      setLoading(true);
 
-      // Check if user is already following
-      const isFollowing = following.includes(targetUserId);
+      // Get the IDs of the current user's followers
+      const followersRef = collection(db, 'followers', user.uid, 'followers');
+      const snapshot = await getDocs(followersRef);
 
-      if (isFollowing) {
-        await deleteDoc(followingRef);
-        await deleteDoc(followerRef);
-        setFollowing(prev => prev.filter(id => id !== targetUserId));
-      } else {
-        await setDoc(followingRef, { followedAt: new Date() });
-        await setDoc(followerRef, { followedAt: new Date() });
-        setFollowing(prev => [...prev, targetUserId]);
+      const followerIds = snapshot.docs.map(doc => doc.id);
+
+      // Obtain information for each follower from the users collection
+      const followersData = [];
+      for (const id of followerIds) {
+        const userDoc = await getDoc(doc(db, 'users', id));
+        if (userDoc.exists()) {
+          followersData.push({ id, ...userDoc.data() });
+        }
       }
+
+      setFollowers(followersData);
     } catch (error) {
-      console.log('Error following/unfollowing:', error);
+      console.error('Error loading followers:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Show loading indicator while data is fetching
+  useEffect(() => {
+    fetchFollowers();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchFollowers();
+    setRefreshing(false);
+  };
+
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" />
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#9C27B0" />
+        <Text style={[styles.title, { marginTop: 10 }]}>Loading followers...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      {users.map(u => (
-        <View key={u.id} style={styles.userCard}>
-          <Avatar.Image
-            size={55}
-            source={u.photo ? { uri: u.photo } : require('../../../images/icono.jpg')}
-          />
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.profileName}>{u.fullName}</Text>
-            <Text style={styles.profileUsername}>@{u.username}</Text>
-          </View>
-          <Button
-            mode={following.includes(u.id) ? 'outlined' : 'contained'}
-            onPress={() => handleFollowToggle(u.id)}
-            style={styles.followButton}
-            labelStyle={styles.followButtonLabel}
-          >
-            {following.includes(u.id) ? 'Following' : 'Follow'}
-          </Button>
+    <ScrollView
+      style={styles.followersContainer}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+      <Text style={styles.followersTitle}>Followers</Text>
+
+      <View style={styles.countersContainer}>
+        <View style={styles.counterBox}>
+          <Text style={styles.counterNumber}>{followers.length}</Text>
+          <Text style={styles.counterLabel}>Followers</Text>
         </View>
-      ))}
+      </View>
+
+      {followers.length === 0 ? (
+        <Text style={styles.emptyText}>No followers yet</Text>
+      ) : (
+        followers.map(follower => (
+          <UserListItemView 
+            key={follower.id} 
+            user={follower} 
+            showFollowButton={true}
+            onPress={() => navigation.navigate('Feed', { userId: follower.id })}
+          />
+        ))
+      )}
     </ScrollView>
   );
 };

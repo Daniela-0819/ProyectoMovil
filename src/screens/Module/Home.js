@@ -67,9 +67,9 @@ const Home = ({ navigation }) => {
             buttonColor={tab === 'foryou' ? '#9C27B0' : 'transparent'}
             onPress={() => setTab('foryou')}
             style={{ marginRight: 10, borderColor: '#9C27B0', borderRadius: 10 }}
-            labelStyle={{ fontWeight: 'bold', fontSize: 14 }}
+            labelStyle={{ fontWeight: 'bold', fontSize: 10 }}
           >
-            For You
+            Followers Tweets
           </Button>
 
           <Button
@@ -78,9 +78,9 @@ const Home = ({ navigation }) => {
             buttonColor={tab === 'following' ? '#9C27B0' : 'transparent'}
             onPress={() => setTab('following')}
             style={{ borderColor: '#9C27B0', borderRadius: 10 }}
-            labelStyle={{ fontWeight: 'bold', fontSize: 14 }}
+            labelStyle={{ fontWeight: 'bold', fontSize: 10 }}
           >
-            Following
+            Following Tweets
           </Button>
         </View>
 
@@ -110,12 +110,12 @@ const Home = ({ navigation }) => {
         }}
       />
 
-      {/* bottom navigationHome Modification*/}
+      {/* bottom navigation*/}
       <View style={styles.bottomNav}>
         <IconButton
           icon="home"
           iconColor="#9C27B0"
-          size={28} // 👈 tamaño del ícono
+          size={28} 
           onPress={() => setTab('foryou')}
         />
 
