@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, RefreshControl, Alert } from 'react-native';
-import { Text, Avatar, Divider, Button, ActivityIndicator, IconButton, FAB } from 'react-native-paper';
+import {
+  Text,
+  Avatar,
+  Divider,
+  Button,
+  ActivityIndicator,
+  IconButton,
+  FAB,
+} from 'react-native-paper';
 import styles from '../../Styles/styles';
 import TweetCard from './TweetCard';
 import { useNavigation } from '@react-navigation/native';
@@ -12,7 +20,26 @@ const FeedView = ({ user, tweets }) => {
   const [userTweets, setUserTweets] = useState(tweets);
   const [refreshing, setRefreshing] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [userData, setUserData] = useState(null);
   const currentUser = auth.currentUser;
+
+  //Load complete user data from Firestore
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userRef = doc(db, 'users', auth.currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          setUserData(userSnap.data());
+        } else {
+          console.warn('No user data found in Firestore');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
 
   // Load user tweets
   const fetchTweets = async () => {
