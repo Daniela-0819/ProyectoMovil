@@ -12,12 +12,20 @@ import {
 import styles from '../../Styles/styles';
 import TweetCard from './TweetCard';
 import { useNavigation } from '@react-navigation/native';
-import { collection, getDocs, doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../../config/firebase';
 
-const FeedView = ({ user, tweets }) => {
+const FeedView = ({
+  user,
+  tweets,
+  loading,
+  currentPage,
+  totalPages,
+  onNextPage,
+  onPreviousPage,
+  onRefresh,
+}) => {
   const navigation = useNavigation();
-  const [userTweets, setUserTweets] = useState(tweets);
   const [refreshing, setRefreshing] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -31,8 +39,6 @@ const FeedView = ({ user, tweets }) => {
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           setUserData(userSnap.data());
-        } else {
-          console.warn('No user data found in Firestore');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -41,34 +47,20 @@ const FeedView = ({ user, tweets }) => {
     fetchUserData();
   }, []);
 
-  // Load user tweets
-  const fetchTweets = async () => {
-    setRefreshing(true);
-    try {
-      const snapshot = await getDocs(collection(db, 'tweets'));
-      const tweetsData = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(t => t.userId === user.uid)
-        .sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds);
-      setUserTweets(tweetsData);
-    } catch (error) {
-      console.log('Error fetching tweets:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   // Check if current user already follows this user
-  const checkIfFollowing = async () => {
-    if (!currentUser || currentUser.uid === user.uid) return;
-    try {
-      const docRef = doc(db, 'followers', currentUser.uid, 'following', user.uid);
-      const docSnap = await getDoc(docRef);
-      setIsFollowing(docSnap.exists());
-    } catch (error) {
-      console.log('Error checking following:', error);
-    }
-  };
+  useEffect(() => {
+    const checkIfFollowing = async () => {
+      if (!currentUser || currentUser.uid === user.uid) return;
+      try {
+        const docRef = doc(db, 'followers', currentUser.uid, 'following', user.uid);
+        const docSnap = await getDoc(docRef);
+        setIsFollowing(docSnap.exists());
+      } catch (error) {
+        console.log('Error checking following:', error);
+      }
+    };
+    checkIfFollowing();
+  }, [user.uid]);
 
   // Follow or unfollow the user
   const handleFollowToggle = async () => {
@@ -97,14 +89,22 @@ const FeedView = ({ user, tweets }) => {
     }
   };
 
-  useEffect(() => {
-    fetchTweets();
-    checkIfFollowing();
-  }, []);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await onRefresh();
+    setRefreshing(false);
+  };
 
-  return (
-    <View style={styles.container}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+  const renderHeader = () => (
+    <>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+        }}
+      >
         {/* Profile header */}
         <View>
           <Avatar.Image
@@ -114,7 +114,7 @@ const FeedView = ({ user, tweets }) => {
           <Text style={styles.profileName}>{user.fullName}</Text>
           <Text style={styles.profileUsername}>@{user.username}</Text>
 
-          {/* Follow/Unfollow button */}
+          {/* Follow/Unfollow button - only show if viewing another user's profile */}
           {currentUser.uid !== user.uid && (
             <Button
               mode="contained"
@@ -135,7 +135,7 @@ const FeedView = ({ user, tweets }) => {
             labelStyle={{ color: '#9C27B0', fontWeight: 'bold' }}
             onPress={() => navigation.navigate('Followers', { user })}
           >
-            {user.followers} Followers
+            {user.followers || 0} Followers
           </Button>
 
           <Button
@@ -143,7 +143,7 @@ const FeedView = ({ user, tweets }) => {
             labelStyle={{ color: '#9C27B0', fontWeight: 'bold' }}
             onPress={() => navigation.navigate('Following', { user })}
           >
-            {user.following} Following
+            {user.following || 0} Following
           </Button>
         </View>
       </View>
@@ -151,38 +151,87 @@ const FeedView = ({ user, tweets }) => {
       <Divider style={{ marginVertical: 10 }} />
 
       {/* Tweets section */}
-      <Text style={styles.sectionTitle}>Mis Tweets</Text>
+      <Text style={styles.sectionTitle}>
+        {currentUser.uid === user.uid ? 'My Tweets' : `${user.fullName}'s Tweets`}
+      </Text>
+    </>
+  );
 
-      {refreshing && <ActivityIndicator color="#9C27B0" style={{ marginTop: 10 }} />}
+  const renderFooter = () => (
+    <View style={styles.paginationContainer}>
+      {loading && <ActivityIndicator animating color="#9C27B0" style={{ marginVertical: 20 }} />}
 
+      {!loading && tweets.length > 0 && (
+        <View style={styles.paginationButtons}>
+          <Button
+            mode="contained"
+            onPress={onPreviousPage}
+            disabled={currentPage === 1}
+            style={[styles.paginationButton, currentPage === 1 && styles.disabledButton]}
+            icon="chevron-left"
+          >
+            Previous
+          </Button>
+
+          <Text style={styles.paginationText}>
+            Page {currentPage} of {totalPages}
+          </Text>
+
+          <Button
+            mode="contained"
+            onPress={onNextPage}
+            disabled={currentPage >= totalPages}
+            style={[styles.paginationButton, currentPage >= totalPages && styles.disabledButton]}
+            icon="chevron-right"
+            contentStyle={{ flexDirection: 'row-reverse' }}
+          >
+            Next
+          </Button>
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
       <FlatList
-        data={userTweets}
+        data={tweets}
         keyExtractor={item => item.id}
         renderItem={({ item }) => <TweetCard tweet={item} />}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchTweets} />}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
         ListEmptyComponent={
-          <Text style={{ textAlign: 'center', marginTop: 20, color: '#777' }}>No tweets yet.</Text>
+          !loading && (
+            <Text style={{ textAlign: 'center', marginTop: 20, color: '#777' }}>
+              No tweets yet.
+            </Text>
+          )
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#9C27B0']} />
         }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
 
-      {/* FAB new tweet*/}
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        onPress={() => {
-          if (!userData) return;
-          navigation.navigate('PostTweet', {
-            user: {
-              uid: auth.currentUser.uid,
-              username: userData.username || 'Unknown',
-              fullName: userData.fullName || 'No name',
-            },
-          });
-        }}
-      />
+      {/* FAB new tweet - only show on own profile */}
+      {currentUser.uid === user.uid && (
+        <FAB
+          style={styles.fab}
+          icon="plus"
+          onPress={() => {
+            if (!userData) return;
+            navigation.navigate('PostTweet', {
+              user: {
+                uid: auth.currentUser.uid,
+                username: userData.username || 'Unknown',
+                fullName: userData.fullName || 'No name',
+              },
+            });
+          }}
+        />
+      )}
 
-      {/* bottom navegation */}
+      {/* Bottom navigation */}
       <View style={styles.bottomNav}>
         <IconButton
           icon="home"
