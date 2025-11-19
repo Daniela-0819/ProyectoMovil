@@ -18,14 +18,14 @@ export default function App() {
     <PaperProvider>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="LogIn">
-          <Stack.Screen name="LogIn" component={LogIn} />
-          <Stack.Screen name="Register" component={Register} />
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="PostTweet" component={PostTweet} />
-          <Stack.Screen name="Feed" component={Feed} />
-          <Stack.Screen name="Followers" component={Followers} />
-          <Stack.Screen name="Following" component={Following} />
-          <Stack.Screen name="SearchUsers" component={SearchUsers} />
+          <Stack.Screen name="LogIn" component={LogIn} options={{ headerShown: false }}/>
+          <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
+          <Stack.Screen name="Home" component={Home} options={{ headerShown: false }}/>
+          <Stack.Screen name="PostTweet" component={PostTweet} options={{ headerShown: false }} />
+          <Stack.Screen name="Feed" component={Feed} options={{ headerShown: false }} />
+          <Stack.Screen name="Followers" component={Followers} options={{ headerShown: false }}/>
+          <Stack.Screen name="Following" component={Following} options={{ headerShown: false }} />
+          <Stack.Screen name="SearchUsers" component={SearchUsers} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
