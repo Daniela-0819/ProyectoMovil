@@ -224,6 +224,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
+  // PAGINATION STYLES
+  paginationContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    backgroundColor: '#faf7ff',
+  },
+  paginationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+  },
+  paginationButton: {
+    borderRadius: 10,
+    backgroundColor: '#9C27B0',
+    flex: 1,
+    maxWidth: 120,
+  },
+  disabledButton: {
+    backgroundColor: '#C0C0C0',
+    opacity: 0.6,
+  },
+  paginationText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6C2DC7',
+    textAlign: 'center',
+    minWidth: 100,
+  },
+
   //HOME
   fab: {
     position: 'absolute',
