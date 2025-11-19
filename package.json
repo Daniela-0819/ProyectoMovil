@@ -12,6 +12,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.14.3",
+    "@cloudinary/url-gen": "^1.22.0",
     "@react-native-vector-icons/material-design-icons": "^12.3.0",
     "@react-native/new-app-screen": "^0.82.0",
     "@react-navigation/native": "^7.1.19",
