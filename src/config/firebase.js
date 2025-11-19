@@ -16,12 +16,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Inicializar Firestore con persistencia local
+// Initialize Firestore with local persistence
 const db = initializeFirestore(app, {
   localCache: persistentLocalCache(),
 });
 
-// Inicializar Auth y Storage
+// Initialize Auth and Storage
 const auth = getAuth(app);
 const storage = getStorage(app);
 

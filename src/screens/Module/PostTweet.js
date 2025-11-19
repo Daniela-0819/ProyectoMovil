@@ -19,7 +19,7 @@ const PostTweet = ({ navigation, route }) => {
   const videoRef = useRef(null);
 
   const MAX_CHARACTERS = 280;
-  const MAX_VIDEO_DURATION = 16; // segundos
+  const MAX_VIDEO_DURATION = 16; // seconds
   const remainingCharacters = MAX_CHARACTERS - tweetContent.length;
   const isOverLimit = remainingCharacters < 0;
 

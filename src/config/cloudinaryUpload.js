@@ -28,7 +28,7 @@ export const uploadImageToCloudinary = async uri => {
     const file = await res.json();
     return file.secure_url;
   } catch (error) {
-    console.log('Error al subir imagen:', error);
+    console.log(error);
     return null;
   }
 };
@@ -36,7 +36,6 @@ export const uploadImageToCloudinary = async uri => {
 // upload video (16-second limit)
 export const uploadVideoToCloudinary = async (uri, duration) => {
   try {
-    console.log('=== INICIO SUBIDA VIDEO ===');
     console.log('URI:', uri);
     console.log('Duration:', duration);
     console.log('Preset:', CLOUDINARY_UPLOAD_PRESET);
@@ -86,7 +85,7 @@ export const uploadVideoToCloudinary = async (uri, duration) => {
     }
 
     const file_response = JSON.parse(responseText);
-    console.log('Upload exitoso:', file_response);
+    console.log('Succesfull Upload :', file_response);
 
     // Get the actual duration of the uploaded video
     const actualDuration = file_response.duration || duration || 0;
@@ -98,7 +97,6 @@ export const uploadVideoToCloudinary = async (uri, duration) => {
       format: file_response.format,
     };
   } catch (error) {
-    console.error('=== ERROR SUBIDA VIDEO ===');
     console.error('Error:', error);
     console.error('Error message:', error.message);
     throw error;
