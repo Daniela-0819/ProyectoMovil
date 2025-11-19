@@ -25,7 +25,7 @@ const PostTweet = ({ navigation, route }) => {
 
     // Select image
   const pickImage = () => {
-    launchImageLibrary(
+    launchImageLibrary(sh 
       { 
         mediaType: 'photo', 
         quality: 0.8,
