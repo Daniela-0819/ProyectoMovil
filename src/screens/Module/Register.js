@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Alert, ScrollView, Image } from 'react-native';
-import { Card, TextInput, Button, Text } from 'react-native-paper';
+import { Card, TextInput, Button, Text, HelperText } from 'react-native-paper';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
@@ -12,16 +12,58 @@ const Register = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formValid, setFormValid] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setFormValid(fullName && username && email && password);
+    setFormValid(fullName && username && email && password && password.length >= 6);
   }, [fullName, username, email, password]);
 
+  const validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleRegister = async () => {
+    // Validate inputs
+    const newErrors = {};
+
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    }
+
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     try {
       //Check if the email or username already exists
-      const emailQuery = query(collection(db, 'users'), where('email', '==', email));
-      const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
+      const emailQuery = query(
+        collection(db, 'users'),
+        where('email', '==', email.toLowerCase().trim()),
+      );
+      const usernameQuery = query(
+        collection(db, 'users'),
+        where('username', '==', username.toLowerCase().trim()),
+      );
 
       const [emailSnapshot, usernameSnapshot] = await Promise.all([
         getDocs(emailQuery),
@@ -29,11 +71,18 @@ const Register = ({ navigation }) => {
       ]);
 
       if (!emailSnapshot.empty) {
-        Alert.alert('Error', 'This email is already registered.');
+        Alert.alert(
+          'Registration Error',
+          'This email is already registered. Please use a different email or try logging in.',
+        );
         return;
       }
+
       if (!usernameSnapshot.empty) {
-        Alert.alert('Error', 'This username is already taken.');
+        Alert.alert(
+          'Registration Error',
+          'This username is already taken. Please choose a different username.',
+        );
         return;
       }
 
@@ -43,20 +92,31 @@ const Register = ({ navigation }) => {
 
       //Save data to Firestore
       await setDoc(doc(db, 'users', user.uid), {
-        fullName,
-        username,
-        email,
+        fullName: fullName.trim(),
+        username: username.toLowerCase().trim(),
+        email: email.toLowerCase().trim(),
         createdAt: new Date(),
         followers: 0,
         following: 0,
       });
 
-      Alert.alert('Success', 'Account created successfully!', [
+      Alert.alert('Registration Successful', 'Your account has been created successfully!', [
         { text: 'OK', onPress: () => navigation.navigate('LogIn') },
       ]);
     } catch (error) {
       console.error('Error registering:', error);
-      Alert.alert('Error', error.message);
+
+      let errorMessage = 'An error occurred during registration. Please try again.';
+
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already in use.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please use at least 6 characters.';
+      }
+
+      Alert.alert('Registration Error', errorMessage);
     }
   };
 
@@ -76,33 +136,61 @@ const Register = ({ navigation }) => {
             <TextInput
               label="Full Name *"
               value={fullName}
-              onChangeText={setFullName}
+              onChangeText={text => {
+                setFullName(text);
+                setErrors({ ...errors, fullName: null });
+              }}
               style={styles.input}
               mode="outlined"
+              error={!!errors.fullName}
             />
+            {errors.fullName && <HelperText type="error">{errors.fullName}</HelperText>}
+
             <TextInput
               label="Username *"
               value={username}
-              onChangeText={setUsername}
+              onChangeText={text => {
+                setUsername(text);
+                setErrors({ ...errors, username: null });
+              }}
               style={styles.input}
               mode="outlined"
+              autoCapitalize="none"
+              error={!!errors.username}
             />
+            {errors.username && <HelperText type="error">{errors.username}</HelperText>}
+
             <TextInput
               label="Email *"
               value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address" //Specifies a keyboard optimized for typing email addresses
+              onChangeText={text => {
+                setEmail(text);
+                setErrors({ ...errors, email: null });
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
               style={styles.input}
               mode="outlined"
+              error={!!errors.email}
             />
+            {errors.email && <HelperText type="error">{errors.email}</HelperText>}
+
             <TextInput
               label="Password *"
               value={password}
-              onChangeText={setPassword}
-              secureTextEntry //Used to hide the text input (passwords)
+              onChangeText={text => {
+                setPassword(text);
+                setErrors({ ...errors, password: null });
+              }}
+              secureTextEntry
               style={styles.input}
               mode="outlined"
+              error={!!errors.password}
             />
+            {errors.password && <HelperText type="error">{errors.password}</HelperText>}
+            <HelperText type="info" visible={!errors.password}>
+              Password must be at least 6 characters
+            </HelperText>
 
             <Button
               mode="contained"
@@ -115,7 +203,7 @@ const Register = ({ navigation }) => {
 
             <Button
               mode="text"
-              onPress={() => navigation.navigate('Login')}
+              onPress={() => navigation.navigate('LogIn')}
               style={{ marginTop: 10 }}
             >
               Already have an account? Log in

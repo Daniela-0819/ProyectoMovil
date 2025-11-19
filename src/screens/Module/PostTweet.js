@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
 import { View, ScrollView, Alert } from 'react-native';
-import { Card, TextInput, Button, Text } from 'react-native-paper';
+import { Card, TextInput, Button, Text, HelperText } from 'react-native-paper';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import styles from '../../Styles/styles';
 
 const PostTweet = ({ navigation, route }) => {
-  const { user } = route.params; // Viene del Home
+  const { user } = route.params;
   const [tweetContent, setTweetContent] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const MAX_CHARACTERS = 280;
+  const remainingCharacters = MAX_CHARACTERS - tweetContent.length;
+  const isOverLimit = remainingCharacters < 0;
 
   const handlePostTweet = async () => {
     if (!tweetContent.trim()) {
       Alert.alert('Error', 'You must write something before posting.');
+      return;
+    }
+
+    if (isOverLimit) {
+      Alert.alert(
+        'Error',
+        `Your tweet exceeds the limit by ${Math.abs(remainingCharacters)} characters.`,
+      );
       return;
     }
 
@@ -27,13 +39,18 @@ const PostTweet = ({ navigation, route }) => {
         createdAt: serverTimestamp(),
       });
 
-      Alert.alert('Success', 'Your tweet was posted!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+      Alert.alert('Success', 'Your tweet was posted successfully!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            setTweetContent('');
+            navigation.goBack();
+          },
+        },
       ]);
-      setTweetContent('');
     } catch (error) {
       console.error('Error posting tweet:', error);
-      Alert.alert('Error', 'Could not post tweet. Try again.');
+      Alert.alert('Error', 'Could not post tweet. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -56,12 +73,22 @@ const PostTweet = ({ navigation, route }) => {
               numberOfLines={5}
               mode="outlined"
               style={styles.input}
+              error={isOverLimit}
             />
+
+            <HelperText
+              type={isOverLimit ? 'error' : 'info'}
+              visible={true}
+              style={{ textAlign: 'right' }}
+            >
+              {remainingCharacters} characters remaining
+            </HelperText>
 
             <Button
               mode="contained"
               onPress={handlePostTweet}
               loading={loading}
+              disabled={loading || isOverLimit || !tweetContent.trim()}
               style={styles.button}
             >
               Post Tweet
