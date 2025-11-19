@@ -19,13 +19,13 @@ const PostTweet = ({ navigation, route }) => {
   const videoRef = useRef(null);
 
   const MAX_CHARACTERS = 280;
-  const MAX_VIDEO_DURATION = 16; // seconds
+  const MAX_VIDEO_DURATION = 16; // segundos
   const remainingCharacters = MAX_CHARACTERS - tweetContent.length;
   const isOverLimit = remainingCharacters < 0;
 
     // Select image
   const pickImage = () => {
-    launchImageLibrary(sh 
+    launchImageLibrary(
       { 
         mediaType: 'photo', 
         quality: 0.8,
