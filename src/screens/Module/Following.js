@@ -51,8 +51,15 @@ const Following = ({ route }) => {
         }
       }
 
-      setAllFollowing(followingData);
-      setTotalPages(Math.ceil(followingData.length / USERS_PER_PAGE) || 1);
+      // to sort alphabetically
+       followingData.sort((a, b) => {
+      const nameA = (a.fullName || '').toLowerCase();
+      const nameB = (b.fullName || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+      });
+
+     setAllFollowing(followingData);
+     setTotalPages(Math.ceil(followingData.length / USERS_PER_PAGE) || 1);
 
       // Show first page
       const firstPage = followingData.slice(0, USERS_PER_PAGE);

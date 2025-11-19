@@ -51,6 +51,13 @@ const Followers = ({ route }) => {
         }
       }
 
+      // to sort alphabetically
+      followersData.sort((a, b) => {
+      const nameA = (a.fullName || '').toLowerCase();
+      const nameB = (b.fullName || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+      });
+
       setAllFollowers(followersData);
       setTotalPages(Math.ceil(followersData.length / USERS_PER_PAGE) || 1);
 
